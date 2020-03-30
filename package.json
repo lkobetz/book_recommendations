@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/lkobetz/book_recommendations/issues"
   },
-  "homepage": "https://github.com/lkobetz/book_recommendations#readme"
+  "homepage": "https://github.com/lkobetz/book_recommendations#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "jquery": "^3.4.1",
+    "request": "^2.88.2"
+  }
 }
