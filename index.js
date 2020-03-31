@@ -21,9 +21,24 @@ request(
         // the third child of the review contains review author info
         authorIds.push(review.children[3].attribs.href.slice(11, end));
       });
-      console.log(authorIds);
     }
   }
 );
 
-// need div id = bookReviews
+request(
+  "https://www.goodreads.com/review/list/1384944?shelf=read&sort=rating",
+  (error, response, html) => {
+    if (!error && response.statusCode == 200) {
+      const usersReadShelf = cheerio.load(html);
+      const allTitles = usersReadShelf(".field.title");
+      allTitlesArr = Array.from(allTitles);
+      allTitlesArr.forEach(title => {
+        title.children[1].children[1] &&
+          console.log(
+            "NEW TITLE:",
+            title.children[1].children[1].attribs.title
+          );
+      });
+    }
+  }
+);
