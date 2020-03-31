@@ -6,7 +6,7 @@ const authorIds = [];
 
 const optionsReviews = {
   uri:
-    "https://www.goodreads.com/book/show/15823480-anna-karenina?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
+    "https://www.goodreads.com/book/show/29906980-lincoln-in-the-bardo?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
   transform: function(html) {
     return cheerio.load(html);
   }
@@ -46,7 +46,7 @@ async function getReviewerIds() {
 
 let all5Stars = { total: 0, books: {} };
 let multiples = {};
-let singles = [];
+let singles = new Set();
 
 async function getBookRecs(authorIds) {
   for (let i = 0; i < authorIds.length; i++) {
@@ -63,32 +63,53 @@ async function getBookRecs(authorIds) {
     allTitlesArr.forEach(title => {
       all5Stars.total++;
       if (title.children[1].children[1]) {
-        if (!(title.children[1].children[1].attribs.title in all5Stars.books)) {
-          all5Stars.books[title.children[1].children[1].attribs.title] = 1;
+        let book = title.children[1].children[1].attribs.href;
+        if (!(book in all5Stars.books)) {
+          all5Stars.books[book] = 1;
         } else {
-          if (!(title.children[1].children[1].attribs.title in multiples)) {
-            multiples[title.children[1].children[1].attribs.title] = 1;
+          if (!(book in multiples)) {
+            multiples[book] = 1;
           } else {
-            multiples[title.children[1].children[1].attribs.title]++;
+            multiples[book]++;
           }
         }
       } else {
         all5Stars[id] = "no books";
       }
     });
-    for (let title in all5Stars.books) {
-      if (!(title in multiples)) {
-        singles.push(title);
-      }
+  }
+  for (let title in all5Stars.books) {
+    if (!(title in multiples)) {
+      singles.add(title);
     }
   }
   return { multiples, singles };
 }
 
 async function sortRecs(allBooks) {
-  console.log("allBooks:", allBooks);
+  sortByAvgRating(Array.from(allBooks.singles));
 }
 
-getReviewerIds().then(result =>
-  getBookRecs(result).then(result => sortRecs(result))
-);
+async function sortByAvgRating() {
+  // for (let i = 0; i < booksArr.length; i++) {
+  let first = "/book/show/13023.Alice_in_Wonderland";
+  const $ = await makeRequest({
+    uri: `https://www.goodreads.com${first}`,
+    transform: function(html) {
+      return cheerio.load(html);
+    }
+  });
+  let ratingContainer = $("#bookMeta");
+  // .find("[itemprop=ratingValue]")
+  const rating = Number(ratingContainer[0].children[5].children[0].data);
+  console.log(rating);
+
+  // }
+}
+
+sortByAvgRating();
+
+// call all functions
+// getReviewerIds().then(result =>
+//   getBookRecs(result).then(result => sortRecs(result))
+// );
