@@ -14,7 +14,7 @@ function makeRequest(options) {
 
 const optionsReviews = {
   uri:
-    "https://www.goodreads.com/book/show/15823480-anna-karenina?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
+    "https://www.goodreads.com/book/show/15811545-a-tale-for-the-time-being?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
   transform: function(html) {
     return cheerio.load(html);
   }
@@ -86,28 +86,12 @@ async function getBookRecs(authorIds) {
   return { multiples, singles };
 }
 
-let sortedByVoteMultiples = [
-  ["/book/show/1885.Pride_and_Prejudice", 3],
-  ["/book/show/89717.The_Haunting_of_Hill_House", 1],
-  ["/book/show/5107.The_Catcher_in_the_Rye", 1],
-  ["/book/show/4671.The_Great_Gatsby", 1],
-  ["/book/show/23878.Chronicle_of_a_Death_Foretold", 1],
-  ["/book/show/4395.The_Grapes_of_Wrath", 1],
-  ["/book/show/5685.Anna_Karenina", 1],
-  ["/book/show/4900.Heart_of_Darkness", 1],
-  ["/book/show/1519.The_Oresteia", 1],
-  [
-    "/book/show/17876.Notes_from_Underground_White_Nights_The_Dream_of_a_Ridiculous_Man_and_Selections_from_The_House_of_the_Dead",
-    1
-  ]
-];
-async function sortRecs() {
-  // let singles = Array.from(allBooks.singles).slice(0, 100);
-  // let sortedSingles = await sortByAvgRating(singles);
-  // let sortedByVoteMultiples = Object.entries(allBooks.multiples).sort(
-  //   (a, b) => b[1] - a[1]
-  // );
-  debugger;
+async function sortRecs(allBooks) {
+  let singles = Array.from(allBooks.singles).slice(0, 100);
+  let sortedSingles = await sortByAvgRating(singles);
+  let sortedByVoteMultiples = Object.entries(allBooks.multiples).sort(
+    (a, b) => b[1] - a[1]
+  );
   let multiplesByVoteAndRating = [];
   let sameNumOfVotes = [];
   for (let i = 0; i < sortedByVoteMultiples.length; i++) {
@@ -130,7 +114,7 @@ async function sortRecs() {
       multiplesByVoteAndRating = multiplesByVoteAndRating.concat(current[0]);
     }
   }
-  console.log(multiplesByVoteAndRating);
+  console.log(multiplesByVoteAndRating.concat(sortedSingles).slice(0, 50));
 }
 
 async function sortByAvgRating(booksArr) {
@@ -149,12 +133,15 @@ async function sortByAvgRating(booksArr) {
   }
   sortedArr.sort((a, b) => b[1] - a[1]);
   sortedArr = sortedArr.slice(0, 50);
+  sortedArr = sortedArr.map(book => {
+    return book[0];
+  });
   return sortedArr;
 }
 
-sortRecs();
+const bookURL = "/book/show/48582002-everything-my-mother-taught-me";
 
 // call all functions
-// getReviewerIds().then(result =>
-//   getBookRecs(result).then(result => sortRecs(result))
-// );
+getReviewerIds().then(result =>
+  getBookRecs(result).then(result => sortRecs(result))
+);
