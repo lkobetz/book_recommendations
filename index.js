@@ -87,29 +87,29 @@ async function getBookRecs(authorIds) {
 }
 
 async function sortRecs(allBooks) {
-  sortByAvgRating(Array.from(allBooks.singles));
+  let singles = Array.from(allBooks.singles).slice(0, 100);
+  sortByAvgRating(singles);
 }
 
-async function sortByAvgRating() {
-  // for (let i = 0; i < booksArr.length; i++) {
-  let first = "/book/show/13023.Alice_in_Wonderland";
-  const $ = await makeRequest({
-    uri: `https://www.goodreads.com${first}`,
-    transform: function(html) {
-      return cheerio.load(html);
-    }
-  });
-  let ratingContainer = $("#bookMeta");
-  // .find("[itemprop=ratingValue]")
-  const rating = Number(ratingContainer[0].children[5].children[0].data);
-  console.log(rating);
-
-  // }
+async function sortByAvgRating(booksArr) {
+  let sortedArr = [];
+  for (let i = 0; i < booksArr.length; i++) {
+    let current = booksArr[i];
+    const $ = await makeRequest({
+      uri: `https://www.goodreads.com${current}`,
+      transform: function(html) {
+        return cheerio.load(html);
+      }
+    });
+    let ratingContainer = $("#bookMeta");
+    const rating = Number(ratingContainer[0].children[5].children[0].data);
+    sortedArr.push([current, rating]);
+  }
+  sortedArr.sort((a, b) => b[1] - a[1]);
+  console.log(sortedArr);
 }
-
-sortByAvgRating();
 
 // call all functions
-// getReviewerIds().then(result =>
-//   getBookRecs(result).then(result => sortRecs(result))
-// );
+getReviewerIds().then(result =>
+  getBookRecs(result).then(result => sortRecs(result))
+);
