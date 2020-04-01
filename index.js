@@ -14,7 +14,7 @@ function makeRequest(options) {
 
 const optionsReviews = {
   uri:
-    "https://www.goodreads.com/book/show/35036409-my-brilliant-friend?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
+    "https://www.goodreads.com/book/show/1232.The_Shadow_of_the_Wind?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
   transform: function(html) {
     return cheerio.load(html);
   }
@@ -24,10 +24,9 @@ const authorIds = [];
 
 async function getReviewerIds() {
   const $ = await makeRequest(optionsReviews);
-  let allReviews = await $(".reviewHeader.uitext.stacked").find(
-    ".staticStars.notranslate"
+  let allReviews = await $(".staticStars.notranslate").filter(
+    "[title='it was amazing']"
   );
-  allReviews = allReviews.filter("[title='it was amazing']");
   allReviews = Array.from(allReviews);
 
   allReviews.forEach(review => {
@@ -131,8 +130,6 @@ async function sortByAvgRating(booksArr) {
   });
   return sortedArr;
 }
-
-// const bookURL = "/book/show/48582002-everything-my-mother-taught-me";
 
 // call all functions
 getReviewerIds().then(result =>
