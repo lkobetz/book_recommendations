@@ -14,7 +14,7 @@ function makeRequest(options) {
 
 const optionsReviews = {
   uri:
-    "https://www.goodreads.com/book/show/15811545-a-tale-for-the-time-being?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
+    "https://www.goodreads.com/book/show/35036409-my-brilliant-friend?ac=1&from_search=true&qid=sUpwev6tfA&rank=1",
   transform: function(html) {
     return cheerio.load(html);
   }
@@ -24,23 +24,16 @@ const authorIds = [];
 
 async function getReviewerIds() {
   const $ = await makeRequest(optionsReviews);
-  const allReviews = await $(".review");
-  let reviewsArr = Array.from(allReviews);
-  reviewsArr = reviewsArr.filter(review => {
-    // 5 is left bodycol // 1 is reviewHeader // 5 is rating
-    if (review.children[5].children[1].children[5]) {
-      return (
-        review.children[5].children[1].children[5].attribs.title ===
-        "it was amazing"
-      );
-    }
-  });
-  reviewsArr.forEach(review => {
-    let end = review.children[3].attribs.href.indexOf("-");
-    // the third child of the review contains review author info
-    authorIds.push(review.children[3].attribs.href.slice(11, end));
-  });
+  let allReviews = await $(".reviewHeader.uitext.stacked").find(
+    ".staticStars.notranslate"
+  );
+  allReviews = allReviews.filter("[title='it was amazing']");
+  allReviews = Array.from(allReviews);
 
+  allReviews.forEach(review => {
+    let end = review.prev.prev.children[1].attribs.href.indexOf("-");
+    authorIds.push(review.prev.prev.children[1].attribs.href.slice(11, end));
+  });
   return authorIds;
 }
 
@@ -59,7 +52,7 @@ async function getBookRecs(authorIds) {
       }
     });
     const allTitles = await $(".field.title");
-    allTitlesArr = Array.from(allTitles).slice(0, 30);
+    allTitlesArr = Array.from(allTitles);
     allTitlesArr.forEach(title => {
       all5Stars.total++;
       if (title.children[1].children[1]) {
@@ -139,7 +132,7 @@ async function sortByAvgRating(booksArr) {
   return sortedArr;
 }
 
-const bookURL = "/book/show/48582002-everything-my-mother-taught-me";
+// const bookURL = "/book/show/48582002-everything-my-mother-taught-me";
 
 // call all functions
 getReviewerIds().then(result =>
